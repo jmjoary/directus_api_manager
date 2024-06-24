@@ -34,6 +34,9 @@ class DirectusApiManager implements IDirectusApiManager {
   set refreshToken(String? value) => _api.refreshToken = value;
 
   @override
+  String get baseUrl => _api.baseUrl;
+
+  @override
   String get webSocketBaseUrl {
     // Remove last / if present
     String url = _api.baseUrl;

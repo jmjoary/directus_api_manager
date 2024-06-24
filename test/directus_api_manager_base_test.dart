@@ -25,6 +25,10 @@ main() {
       );
     });
 
+    test("Get base url", () {
+      expect(sut.baseUrl, "http://api.com");
+    });
+
     test('Empty manager does not have a logged in user', () async {
       final mockClient = MockHTTPClient();
       final sut =

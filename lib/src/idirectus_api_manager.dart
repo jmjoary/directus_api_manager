@@ -3,6 +3,7 @@ import 'package:directus_api_manager/src/model/directus_data.dart';
 import 'package:http/http.dart';
 
 abstract class IDirectusApiManager {
+  String get baseUrl;
   Future<DirectusLoginResult> loginDirectusUser(
       String username, String password,
       {String? oneTimePassword});
