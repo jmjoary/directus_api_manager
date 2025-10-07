@@ -892,4 +892,15 @@ class DirectusApiManager implements IDirectusApiManager {
       startWebsocketSubscription(existingSubscription);
     }
   }
+
+  @override
+  Future<DirectusLoginResult> loginDirectusUserWithProvider(
+      {required String provider}) {
+    return _sendRequest(
+        prepareRequest: () =>
+            _api.prepareLoginRequestWithProvider(provider: provider),
+        dependsOnToken: false,
+        canSaveResponseToCache: false,
+        parseResponse: (response) => _api.parseLoginResponse(response));
+  }
 }

@@ -5,6 +5,8 @@ abstract class IDirectusApiManager {
   Future<DirectusLoginResult> loginDirectusUser(
       String username, String password,
       {String? oneTimePassword});
+  Future<DirectusLoginResult> loginDirectusUserWithProvider(
+      {required String provider});
   Future<bool> logoutDirectusUser();
   Future<bool> registerDirectusUser(
       {required String email,

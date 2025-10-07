@@ -70,6 +70,7 @@ abstract class IDirectusAPI {
 
   PreparedRequest prepareLoginRequest(String username, String password,
       {String? oneTimePassword});
+  PreparedRequest prepareLoginRequestWithProvider({required String provider});
   DirectusLoginResult parseLoginResponse(Response response);
 
   PreparedRequest prepareUserInviteRequest(String email, String roleId);
@@ -631,6 +632,13 @@ class DirectusAPI implements IDirectusAPI {
       if (lastname != null) "last_name": lastname
     });
     request.addJsonHeaders();
+    return PreparedRequest(request: request);
+  }
+
+  @override
+  PreparedRequest prepareLoginRequestWithProvider({required String provider}) {
+    final request = Request("GET", Uri.parse("$_baseURL/auth/login/$provider"));
+
     return PreparedRequest(request: request);
   }
 }
