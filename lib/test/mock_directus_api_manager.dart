@@ -284,4 +284,9 @@ class MockDirectusApiManager extends IDirectusApiManager with MockMixin {
         arguments: {"provider": provider});
     return Future.value(popNextReturnedObject());
   }
+
+  @override
+  set accessToken(String? value) {
+    addCall(named: "set accessToken", arguments: {"value": value});
+  }
 }

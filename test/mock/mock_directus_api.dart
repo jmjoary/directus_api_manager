@@ -333,9 +333,8 @@ class MockDirectusApi with MockMixin implements IDirectusAPI {
   }
 
   @override
-  PreparedRequest prepareLoginRequestWithProvider({required String provider}) {
-    addCalledFunction(named: "prepareLoginRequestWithProvider");
-    addReceivedObject(provider, name: "provider");
-    return nextReturnedRequest;
+  set accessToken(String? value) {
+    addCalledFunction(named: "set accessToken");
+    addReceivedObject(value, name: "value");
   }
 }

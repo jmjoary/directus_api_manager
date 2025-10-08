@@ -8,7 +8,9 @@ abstract class IDirectusAPI {
   bool get hasLoggedInUser;
   bool get shouldRefreshToken;
   String? get accessToken;
+  set accessToken(String? value);
   String? get currentAuthToken;
+
   String? get refreshToken;
   set refreshToken(String? value);
   String get baseUrl;
@@ -70,7 +72,7 @@ abstract class IDirectusAPI {
 
   PreparedRequest prepareLoginRequest(String username, String password,
       {String? oneTimePassword});
-  PreparedRequest prepareLoginRequestWithProvider({required String provider});
+
   DirectusLoginResult parseLoginResponse(Response response);
 
   PreparedRequest prepareUserInviteRequest(String email, String roleId);
@@ -115,6 +117,8 @@ class DirectusAPI implements IDirectusAPI {
   String get baseUrl => _baseURL;
 
   String? _accessToken;
+  @override
+  set accessToken(String? value) => _accessToken = value;
   String? _refreshToken;
   @override
   set refreshToken(String? value) => _refreshToken = value;
@@ -632,13 +636,6 @@ class DirectusAPI implements IDirectusAPI {
       if (lastname != null) "last_name": lastname
     });
     request.addJsonHeaders();
-    return PreparedRequest(request: request);
-  }
-
-  @override
-  PreparedRequest prepareLoginRequestWithProvider({required String provider}) {
-    final request = Request("GET", Uri.parse("$_baseURL/auth/login/$provider"));
-
     return PreparedRequest(request: request);
   }
 }
