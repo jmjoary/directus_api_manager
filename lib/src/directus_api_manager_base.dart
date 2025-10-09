@@ -259,21 +259,18 @@ class DirectusApiManager implements IDirectusApiManager {
     _currentUserLock = completer.future;
 
     try {
-      if (cachedCurrentUser == null && await hasLoggedInUser()) {
-        cachedCurrentUser = await _sendRequest(
-            requestIdentifier: _currentUserRequestIdentifier,
-            canSaveResponseToCache: canSaveResponseToCache,
-            canUseCacheForResponse: canUseCacheForResponse,
-            canUseOldCachedResponseAsFallback:
-                canUseOldCachedResponseAsFallback,
-            maxCacheAge: maxCacheAge,
-            prepareRequest: () =>
-                _api.prepareGetCurrentUserRequest(fields: fields),
-            parseResponse: (response) {
-              final parsedJson = _api.parseGetSpecificItemResponse(response);
-              return DirectusUser(parsedJson);
-            });
-      }
+      cachedCurrentUser ??= await _sendRequest(
+          requestIdentifier: _currentUserRequestIdentifier,
+          canSaveResponseToCache: canSaveResponseToCache,
+          canUseCacheForResponse: canUseCacheForResponse,
+          canUseOldCachedResponseAsFallback: canUseOldCachedResponseAsFallback,
+          maxCacheAge: maxCacheAge,
+          prepareRequest: () =>
+              _api.prepareGetCurrentUserRequest(fields: fields),
+          parseResponse: (response) {
+            final parsedJson = _api.parseGetSpecificItemResponse(response);
+            return DirectusUser(parsedJson);
+          });
     } catch (error) {
       print(error);
     }
