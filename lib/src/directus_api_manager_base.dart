@@ -393,7 +393,7 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   @override
-  Future<Iterable<Type>> findListOfItems<Type extends DirectusData>(
+  Future<Iterable<T>> findListOfItems<T extends DirectusData>(
       {Filter? filter,
       List<SortProperty>? sortBy,
       String? fields,
@@ -407,7 +407,7 @@ class DirectusApiManager implements IDirectusApiManager {
       /// Extra tags to associate with the cache entry
       List<String> extraTags = const [],
       Duration maxCacheAge = const Duration(days: 1)}) {
-    final collectionClass = _metadataGenerator.getClassMirrorForType(Type);
+    final collectionClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(collectionClass);
     return _sendRequest(
         requestIdentifier: requestIdentifier,
@@ -426,11 +426,11 @@ class DirectusApiManager implements IDirectusApiManager {
             tags: ["${collectionMetadata.endpointName}/list", ...extraTags]),
         parseResponse: (response) => _api
             .parseGetListOfItemsResponse(response)
-            .map((json) => collectionClass.newInstance('', [json]) as Type));
+            .map((json) => collectionClass.newInstance('', [json]) as T));
   }
 
   @override
-  Future<Type?> getSpecificItem<Type extends DirectusData>(
+  Future<T?> getSpecificItem<T extends DirectusData>(
       {required String id,
       String? fields,
       String? requestIdentifier,
@@ -441,7 +441,7 @@ class DirectusApiManager implements IDirectusApiManager {
       /// Extra tags to associate with the cache entry
       List<String> extraTags = const [],
       Duration maxCacheAge = const Duration(days: 1)}) {
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
     return _sendRequest(
         requestIdentifier: requestIdentifier,
@@ -456,10 +456,10 @@ class DirectusApiManager implements IDirectusApiManager {
             fields: fields ?? collectionMetadata.defaultFields,
             tags: ["${collectionMetadata.endpointName}/$id", ...extraTags]),
         parseResponse: (response) {
-          Type? item;
+          T? item;
           try {
             final parsedJson = _api.parseGetSpecificItemResponse(response);
-            item = specificClass.newInstance('', [parsedJson]) as Type;
+            item = specificClass.newInstance('', [parsedJson]) as T;
           } catch (e) {
             log("Error while parsing response: $e");
           }
@@ -468,17 +468,16 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   @override
-  Future<DirectusItemCreationResult<Type>>
-      createNewItem<Type extends DirectusData>({
-    required Type objectToCreate,
+  Future<DirectusItemCreationResult<T>> createNewItem<T extends DirectusData>({
+    required T objectToCreate,
     String? fields,
 
     /// Extra tags to clear from the cache
     List<String> extraTagsToClear = const [],
   }) async {
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
-    final DirectusItemCreationResult<Type> result = await _sendRequest(
+    final DirectusItemCreationResult<T> result = await _sendRequest(
         canSaveResponseToCache: false,
         prepareRequest: () => _api.prepareCreateNewItemRequest(
             endpointName: collectionMetadata.endpointName,
@@ -497,10 +496,10 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   @override
-  Future<DirectusItemCreationResult<Type>>
-      createMultipleItems<Type extends DirectusData>({
+  Future<DirectusItemCreationResult<T>>
+      createMultipleItems<T extends DirectusData>({
     String? fields,
-    required Iterable<Type> objectList,
+    required Iterable<T> objectList,
 
     /// Extra tags to clear from the cache
     List<String> extraTags = const [],
@@ -508,11 +507,11 @@ class DirectusApiManager implements IDirectusApiManager {
     if (objectList.isEmpty) {
       throw Exception("objectList can not be empty");
     }
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
     final List<Map<String, dynamic>> objectListData =
         objectList.map(((object) => object.mapForObjectCreation())).toList();
-    final DirectusItemCreationResult<Type> result = await _sendRequest(
+    final DirectusItemCreationResult<T> result = await _sendRequest(
         canSaveResponseToCache: false,
         prepareRequest: () => _api.prepareCreateNewItemRequest(
             endpointName: collectionMetadata.endpointName,
@@ -522,13 +521,13 @@ class DirectusApiManager implements IDirectusApiManager {
         parseResponse: (response) {
           switch (response.statusCode) {
             case 200:
-              final DirectusItemCreationResult<Type> creationResult =
+              final DirectusItemCreationResult<T> creationResult =
                   DirectusItemCreationResult(isSuccess: true);
               final listJson = _api.parseCreateNewItemResponse(response);
               if (listJson is List) {
                 for (final itemJson in listJson) {
                   creationResult.createdItemList
-                      .add(specificClass.newInstance('', [itemJson]) as Type);
+                      .add(specificClass.newInstance('', [itemJson]) as T);
                 }
               }
               return creationResult;
@@ -554,16 +553,16 @@ class DirectusApiManager implements IDirectusApiManager {
   ///If [force] is true, the update will be done even if the object does not need saving,
   ///otherwise it will only send the modified data for this object.
   @override
-  Future<Type> updateItem<Type extends DirectusData>(
-      {required Type objectToUpdate,
+  Future<T> updateItem<T extends DirectusData>(
+      {required T objectToUpdate,
       String? fields,
 
       /// Extra tags to clear from the cache
       List<String> extraTagsToClear = const [],
       bool force = false}) async {
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
-    Type? updatedObjectReturnedFromServer;
+    T? updatedObjectReturnedFromServer;
     try {
       if (objectToUpdate.needsSaving || force) {
         final Map<String, dynamic> objectData = force
@@ -604,7 +603,7 @@ class DirectusApiManager implements IDirectusApiManager {
 
         // Return a new object with the updated data
         updatedObjectReturnedFromServer =
-            specificClass.newInstance('', [fullUpdatedData]) as Type;
+            specificClass.newInstance('', [fullUpdatedData]) as T;
         if (updatedObjectReturnedFromServer is DirectusUser) {
           final currentUser = cachedCurrentUser;
           if (currentUser != null &&
@@ -630,14 +629,14 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   @override
-  Future<bool> deleteItem<Type extends DirectusData>({
+  Future<bool> deleteItem<T extends DirectusData>({
     required String objectId,
     bool mustBeAuthenticated = true,
 
     /// Extra tags to clear from the cache
     List<String> extraTagsToClear = const [],
   }) async {
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
     try {
       final wasDeleted = await _sendRequest(
@@ -662,7 +661,7 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   @override
-  Future<bool> deleteMultipleItems<Type extends DirectusData>({
+  Future<bool> deleteMultipleItems<T extends DirectusData>({
     required Iterable<dynamic> objectIdsToDelete,
     bool mustBeAuthenticated = true,
 
@@ -672,7 +671,7 @@ class DirectusApiManager implements IDirectusApiManager {
     if (objectIdsToDelete.isEmpty) {
       throw Exception("objectIdsToDelete can not be empty");
     }
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
     final wereDeleted = await _sendRequest(
         canSaveResponseToCache: false,
@@ -815,15 +814,14 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   /// Clears the cache for the object with the given [id].
-  /// It is important to specify the type of the object with the [Type] annotation when calling the function.
+  /// It is important to specify the type of the object with the [T] annotation when calling the function.
   /// Example : `clearCacheForObjectWithId<DirectusUser>(id);`
   /// If you already have a full object of that type prefer using [clearCacheForObject] instead that will automatically infer the type of the received object.
-  Future<void> clearCacheForObjectWithId<Type extends DirectusData>(
-      dynamic id) {
-    final specificClass = _metadataGenerator.getClassMirrorForType(Type);
+  Future<void> clearCacheForObjectWithId<T extends DirectusData>(dynamic id) {
+    final specificClass = _metadataGenerator.getClassMirrorForType(T);
     final collectionMetadata = _collectionMetadataFromClass(specificClass);
     final currentUserIsTheTarget =
-        Type == DirectusUser && cachedCurrentUser?.id == id;
+        T == DirectusUser && cachedCurrentUser?.id == id;
     if (currentUserIsTheTarget) {
       discardCurrentUserCache();
     }
@@ -834,8 +832,8 @@ class DirectusApiManager implements IDirectusApiManager {
   }
 
   /// Clears the cache for the object with the given [object].
-  Future<void> clearCacheForObject<Type extends DirectusData>(Type object) {
-    return clearCacheForObjectWithId<Type>(object.id);
+  Future<void> clearCacheForObject<T extends DirectusData>(T object) {
+    return clearCacheForObjectWithId<T>(object.id);
   }
 
   @override
