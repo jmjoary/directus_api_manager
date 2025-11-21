@@ -61,6 +61,8 @@ class DirectusApiManager implements IDirectusApiManager {
   bool get shouldRefreshToken => _api.shouldRefreshToken;
   @override
   String? get accessToken => _api.accessToken;
+  @override
+  set accessToken(String? value) => _api.accessToken = value;
 
   @override
   String? get refreshToken => _api.refreshToken;
@@ -257,21 +259,18 @@ class DirectusApiManager implements IDirectusApiManager {
     _currentUserLock = completer.future;
 
     try {
-      if (cachedCurrentUser == null && await hasLoggedInUser()) {
-        cachedCurrentUser = await _sendRequest(
-            requestIdentifier: _currentUserRequestIdentifier,
-            canSaveResponseToCache: canSaveResponseToCache,
-            canUseCacheForResponse: canUseCacheForResponse,
-            canUseOldCachedResponseAsFallback:
-                canUseOldCachedResponseAsFallback,
-            maxCacheAge: maxCacheAge,
-            prepareRequest: () =>
-                _api.prepareGetCurrentUserRequest(fields: fields),
-            parseResponse: (response) {
-              final parsedJson = _api.parseGetSpecificItemResponse(response);
-              return DirectusUser(parsedJson);
-            });
-      }
+      cachedCurrentUser ??= await _sendRequest(
+          requestIdentifier: _currentUserRequestIdentifier,
+          canSaveResponseToCache: canSaveResponseToCache,
+          canUseCacheForResponse: canUseCacheForResponse,
+          canUseOldCachedResponseAsFallback: canUseOldCachedResponseAsFallback,
+          maxCacheAge: maxCacheAge,
+          prepareRequest: () =>
+              _api.prepareGetCurrentUserRequest(fields: fields),
+          parseResponse: (response) {
+            final parsedJson = _api.parseGetSpecificItemResponse(response);
+            return DirectusUser(parsedJson);
+          });
     } catch (error) {
       print(error);
     }

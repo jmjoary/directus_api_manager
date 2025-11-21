@@ -85,6 +85,7 @@ abstract class IDirectusApiManager {
       required T Function(Response) jsonConverter});
   bool get shouldRefreshToken;
   String? get accessToken;
+  set accessToken(String? value);
   String? get refreshToken;
   Future<bool> tryAndRefreshToken();
   String get webSocketBaseUrl;
